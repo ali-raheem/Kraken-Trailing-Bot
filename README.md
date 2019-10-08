@@ -13,7 +13,14 @@ This means you can have a stop loss order but take advantages of gains.
 * I think there are race conditions in the orders being dealt with
 * State -1 (error) is not yet implemented.
 * Buy and take-profit types would also be good.
+
+### TODO
+
+Issues I really care about
+
+* Make it take command line arguments to add new orders?
 * Make it more failsafe see note in code.
+* Web monitor?
 
 ### Usage
 
