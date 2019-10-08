@@ -23,11 +23,17 @@ class DB():
 		self.c.execute(query)
 	def commit(self):
 		self.conn.commit()
-	def getActiveTxid(self):
+
+	def getTxid(self, orders):
 		res = []
-		for txid, _, _, _, _, _, _, _ in self.getActive():
+		for txid, _, _, _, _, _, _, _ in orders:
 			res.append(txid)
 		return res
+	def getActiveTxid(self):
+		return self.getTxid(self.getActive())
+	def getNewTxid(self):
+		return self.getTxid(self.getNew())
+
 	def getOrders(self, status):
 		query = '''SELECT * FROM `orders` WHERE `status` = ?'''
 		self.c.execute(query, (status,) )
@@ -40,18 +46,14 @@ class DB():
 	def addOrder(self, txid, pair, price, volume, offset, ticker, status, note):
 		query = '''INSERT INTO `orders` VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
 		self.c.execute(query, (txid, pair, price, volume, offset, ticker, status, note))
-	def setOrderStatus(self, txid, status):
-		query = '''UPDATE `orders` SET `status` = ? WHERE `txid` = ?'''
-		self.c.execute(query, (status, txid))
+
 	def cancelOrder(self, txid):
 		self.setOrderStatus(txid, 0)
 	def setOrderActive(self, txid):
 		self.setOrderStatus(txid, 1)
-
-	@staticmethod
-	def parseOrder(order):
-		txid, pair, price, volume, offset, ticker, status, note = order
-		return (txid, pair, price, volume, offset, ticker, status, note)
+	def setOrderStatus(self, txid, status):
+		query = '''UPDATE `orders` SET `status` = ? WHERE `txid` = ?'''
+		self.c.execute(query, (status, txid))
 
 if __name__ == "__main__":
 	db = DB()
@@ -59,18 +61,20 @@ if __name__ == "__main__":
 	db.addOrder("TXID-001", "XRPEUR", 0.225, 50, 0.08, "XXRPZEUR", 2, "")
 	db.addOrder("TXID-002", "XRPEUR", 0.220, 55, 0.08, "XXRPZEUR", 1, "")
 
-	for order in db.getNew():
-		txid, _, _, _, _, _, _, _ = order
+	print("New orders\n====================")
+	for txid in db.getNewTxid():
+		print(txid)
 		db.setOrderActive(txid)
 
+	print("\nTickers\n=======================")
 	tickers_db = []
 	for order in db.getActive():
 		txid, pair, price, volume, offset, ticker, status, note = order
 		tickers_db.append(ticker)
 	tickers_db = set(tickers_db)
-
 	print(tickers_db)
 
+	print("\nActive Orders\n==================")
 	for txid in db.getActiveTxid():
 		print(txid)
 		db.cancelOrder(txid)
