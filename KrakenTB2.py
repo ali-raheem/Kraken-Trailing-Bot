@@ -3,7 +3,7 @@
 # Copyright Ali Raheem 2019
 # GPLv3
 
-import sqlite3, krakenex
+import sqlite3, krakenex, datetime
 
 class DB():
 	def __init__(self, path='orders.sqlite'):
@@ -97,8 +97,9 @@ class API():
 
 if __name__ == "__main__":
 	db = DB()
-
 	api = API()
+
+	print(datetime.datetime.now().strftime("%Y-%l-%d %H:%M:%S"))
 
 #	db.addOrder("", "XRPEUR", 0, 50, 0.008, "XXRPZEUR", 2, "")
 
@@ -116,7 +117,7 @@ if __name__ == "__main__":
 	active_tickers = set(db.getTickers(db.getActive()))
 	prices = api.getTicker(active_tickers)
 
-	print("\nActive Orders\n==================")
+	print("Active Orders\n==================")
 	for txid, pair, price, volume, offset, ticker, status, note in db.getActive():
 		close_price = float("%.5f" % float(prices[ticker]['c'][0]))
 		print(txid, "pair:", pair, "Stop price:", price, "volume:", volume)
@@ -124,11 +125,15 @@ if __name__ == "__main__":
 		print("Close price:", close_price, "New stop:", current_price)
 		if current_price > price:
 			print("Replaceing order", txid)
-			db.cancelOrder(txid)
 			api.cancelOrder(txid)
+			# Here we shouldn't simply cancel order but make it failsafe if addOrder errors for some reason.
+			# Set status = 2, and price = 0? To guarantee it is readded on next run?
+			db.cancelOrder(txid)
 			txid = api.addOrder(pair, current_price, volume)
 			db.addOrder(txid, pair, current_price, volume, offset, ticker, 1, note)
 		else:
 			print("Keeping", txid)
+
+	print()
 	db.commit()
 
