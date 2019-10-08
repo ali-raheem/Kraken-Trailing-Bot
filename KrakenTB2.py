@@ -109,6 +109,8 @@ if __name__ == "__main__":
 
 	print("New orders\n====================")
 	for txid in db.getNewTxid():
+		# THIS IS IDIOTIC!!! New orders have no Txid, how does this even work??
+		# This should run UPDATE orders SET status = 1 WHERE status = 2
 		print(txid)
 		db.setOrderActive(txid)
 
