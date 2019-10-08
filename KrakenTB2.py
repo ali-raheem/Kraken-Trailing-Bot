@@ -52,6 +52,10 @@ class DB():
 	def getNew(self):
 		return self.getOrders(2)
 
+	def setNewActive(self):
+		query = '''UPDATE `orders` SET `status` = 1 WHERE `status` = 2'''
+		self.c.execute(query)
+
 	def addOrder(self, txid, pair, price, volume, offset, ticker, status, note):
 		query = '''INSERT INTO `orders` VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
 		self.c.execute(query, (txid, pair, price, volume, offset, ticker, status, note))
@@ -107,12 +111,7 @@ if __name__ == "__main__":
 		print("Cancelling stale order", order)
 		db.cancelOrder(order)
 
-	print("New orders\n====================")
-	for txid in db.getNewTxid():
-		# THIS IS IDIOTIC!!! New orders have no Txid, how does this even work??
-		# This should run UPDATE orders SET status = 1 WHERE status = 2
-		print(txid)
-		db.setOrderActive(txid)
+	db.setNewActive()
 
 	active_tickers = set(db.getTickers(db.getActive()))
 	prices = api.getTicker(active_tickers)
