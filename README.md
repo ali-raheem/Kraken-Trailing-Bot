@@ -34,6 +34,8 @@ Typically trialing stop-loss orders are used when you already have some gains. A
 
 Now the bot should make a stop-loss sell order at the last price - offset and with each run will monitor it.
 
+**You must have** an API key which allows trading. Duh!. Put this key in `kraken.key` `key` on the first line and then the `secret` on the second line. See the Krakenex library for more details.
+
 ### Running
 
 ```sh
