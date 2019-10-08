@@ -1,10 +1,14 @@
 # Kraken Trailing Bot
 
+```
 DISCLAIMER: I am not responsible for your lost money. I have lost **LOADS** of money with this, bugs can potentially cost you dearly. You have been warned.
+```
 
 This bot takes a currency pair and an amount to trade and an "offset". It monitors the market and manages a stop-loss trade which is maintained no lower than the peak - some offset.
 
 This means you can have a stop loss order but take advantages of gains.
+
+Please familiarise yourself with the [Kraken API docs](https://www.kraken.com/features/api). **Especially** the [call rate limit](https://www.kraken.com/features/api#api-call-rate-limit) which is part of the how not to be banned rules! Don't annoy Kraken with this.
 
 ### Issues
 
