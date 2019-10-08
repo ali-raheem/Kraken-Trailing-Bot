@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
-import sqlite3
+# Copyright Ali Raheem 2019
+# GPLv3
+
+import sqlite3, krakenex
 
 class DB():
 	def __init__(self, path='orders.sqlite'):
@@ -23,6 +26,12 @@ class DB():
 		self.c.execute(query)
 	def commit(self):
 		self.conn.commit()
+
+	def getTickers(self, orders):
+		res = []
+		for _, _, _, _, _, ticker, _, _ in orders:
+			res.append(ticker)
+		return res
 
 	def getTxid(self, orders):
 		res = []
@@ -55,43 +64,70 @@ class DB():
 		query = '''UPDATE `orders` SET `status` = ? WHERE `txid` = ?'''
 		self.c.execute(query, (status, txid))
 
+class API():
+	def __init__(self, keyfile="kraken.key"):
+		self.k = krakenex.API()
+		self.k.load_key(keyfile)
+	def getTicker(self, tickers):
+		res = self.k.query_public('Ticker', {'pair': ','.join(tickers)})
+		if len(res['error']) == 0:
+			return res['result']
+		raise Exception(res['error'][0])
+	def getOpenOrders(self):
+		return list(self.k.query_private('OpenOrders', {'trades': False})['result']['open'].keys())
+	def cancelOrder(self, txid):
+		if txid == None:
+ 			return None
+		return self.k.query_private('CancelOrder', {'txid': txid})
+	def addOrder(self, pair, price, volume):
+		response = self.k.query_private('AddOrder', {
+                                                'pair': pair,
+                                                'type': 'sell',
+                                                'ordertype': 'stop-loss',
+                                                'price': price,
+                                                'volume': volume})
+		if len(response['error']) == 0:
+			return response['result']['txid'][0]
+		else:
+			raise Exception(response['error'][0])
+
 if __name__ == "__main__":
 	db = DB()
 
-	db.addOrder("TXID-001", "XRPEUR", 0.225, 50, 0.08, "XXRPZEUR", 2, "")
-	db.addOrder("TXID-002", "XRPEUR", 0.220, 55, 0.08, "XXRPZEUR", 1, "")
+	api = API()
+
+#	db.addOrder("", "XRPEUR", 0, 50, 0.008, "XXRPZEUR", 2, "")
+
+	active_orders_api = set(api.getOpenOrders())
+	active_orders_db = set(db.getActiveTxid())
+
+	stale_orders = active_orders_db - active_orders_api
+
+	for order in stale_orders:
+		print("Cancelling stale order", order)
+		db.cancelOrder(order)
 
 	print("New orders\n====================")
 	for txid in db.getNewTxid():
 		print(txid)
 		db.setOrderActive(txid)
 
-	print("\nTickers\n=======================")
-	tickers_db = []
-	for order in db.getActive():
-		txid, pair, price, volume, offset, ticker, status, note = order
-		tickers_db.append(ticker)
-	tickers_db = set(tickers_db)
-	print(tickers_db)
+	active_tickers = set(db.getTickers(db.getActive()))
+	prices = api.getTicker(active_tickers)
 
 	print("\nActive Orders\n==================")
-	for txid in db.getActiveTxid():
-		print(txid)
-		db.cancelOrder(txid)
-
+	for txid, pair, price, volume, offset, ticker, status, note in db.getActive():
+		close_price = float("%.5f" % float(prices[ticker]['c'][0]))
+		print(txid, "pair:", pair, "Stop price:", price, "volume:", volume)
+		current_price = float("%.5f" % (close_price - offset))
+		print("Close price:", close_price, "New stop:", current_price)
+		if current_price > price:
+			print("Replaceing order", txid)
+			db.cancelOrder(txid)
+			api.cancelOrder(txid)
+			txid = api.addOrder(pair, current_price, volume)
+			db.addOrder(txid, pair, current_price, volume, offset, ticker, 1, note)
+		else:
+			print("Keeping", txid)
 	db.commit()
 
-#	for txid, pair, price, volume, offset, ticker, status, note in db.getNew():
-#		print(txid)
-
-# Get active orders from DB
-# Get active orders from API
-# Inactivate orders in DB not in API
-# Make new orders active
-# Collect tickers into a set
-# Get last price from tickers API
-# current = last price - offset
-# If last current > price
-# Cancel order - or Error it out
-# Add new order with price = current
-# Update DB
