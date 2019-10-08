@@ -47,12 +47,35 @@ class DB():
 		self.setOrderStatus(txid, 0)
 	def setOrderActive(self, txid):
 		self.setOrderStatus(txid, 1)
+
+	@staticmethod
+	def parseOrder(order):
+		txid, pair, price, volume, offset, ticker, status, note = order
+		return (txid, pair, price, volume, offset, ticker, status, note)
+
 if __name__ == "__main__":
 	db = DB()
-	db.addOrder("TXID-001", "XRPEUR", 0.225, 50, 0.08, "XXRPZEUR", 1, "")
+
+	db.addOrder("TXID-001", "XRPEUR", 0.225, 50, 0.08, "XXRPZEUR", 2, "")
+	db.addOrder("TXID-002", "XRPEUR", 0.220, 55, 0.08, "XXRPZEUR", 1, "")
+
+	for order in db.getNew():
+		txid, _, _, _, _, _, _, _ = order
+		db.setOrderActive(txid)
+
+	tickers_db = []
+	for order in db.getActive():
+		txid, pair, price, volume, offset, ticker, status, note = order
+		tickers_db.append(ticker)
+	tickers_db = set(tickers_db)
+
+	print(tickers_db)
+
 	for txid in db.getActiveTxid():
 		print(txid)
 		db.cancelOrder(txid)
+
+	db.commit()
 
 #	for txid, pair, price, volume, offset, ticker, status, note in db.getNew():
 #		print(txid)
@@ -68,4 +91,3 @@ if __name__ == "__main__":
 # Cancel order - or Error it out
 # Add new order with price = current
 # Update DB
-	db.commit()
