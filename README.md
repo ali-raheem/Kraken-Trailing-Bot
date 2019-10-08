@@ -1,7 +1,7 @@
 # Kraken Trailing Bot
 
 ```
-DISCLAIMER: I am not responsible for your lost money.
+DISCLAIMER: I am not responsible for your lost money, or any trouble you get into to.
 I have lost **LOADS** of money with this, bugs can potentially cost you dearly.
 You have been warned.
 ```
