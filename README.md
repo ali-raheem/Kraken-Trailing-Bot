@@ -1,7 +1,9 @@
 # Kraken Trailing Bot
 
 ```
-DISCLAIMER: I am not responsible for your lost money. I have lost **LOADS** of money with this, bugs can potentially cost you dearly. You have been warned.
+DISCLAIMER: I am not responsible for your lost money.
+I have lost **LOADS** of money with this, bugs can potentially cost you dearly.
+You have been warned.
 ```
 
 This bot takes a currency pair and an amount to trade and an "offset". It monitors the market and manages a stop-loss trade which is maintained no lower than the peak - some offset.
