@@ -13,6 +13,7 @@ This means you can have a stop loss order but take advantages of gains.
 * I think there are race conditions in the orders being dealt with
 * State -1 (error) is not yet implemented.
 * Buy and take-profit types would also be good.
+* Make it more failsafe see note in code.
 
 ### Usage
 
@@ -20,6 +21,18 @@ Typically trialing stop-loss orders are used when you already have some gains. A
 
 Now the bot should make a stop-loss sell order at the last price - offset and with each run will monitor it.
 
+### Running
+
+```sh
+while true; do
+	python3 KrakenTB2.py
+	sleep 15
+done
+```
+
+Or whatever the windows BAT equivalent is.
+
+I'm pretty sure it could run must more often as the only API call to raise the rate counter is OpenOrders (I think this raises it 1).
 
 ## Dependencies
 * [Krakenex](https://github.com/veox/python3-krakenex)
