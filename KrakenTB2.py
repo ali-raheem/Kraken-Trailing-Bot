@@ -26,22 +26,10 @@ class DB():
 		self.c.execute(query)
 	def commit(self):
 		self.conn.commit()
-
-	def getTickers(self, orders):
-		res = []
-		for _, _, _, _, _, ticker, _, _ in orders:
-			res.append(ticker)
-		return res
-
-	def getTxid(self, orders):
-		res = []
-		for txid, _, _, _, _, _, _, _ in orders:
-			res.append(txid)
-		return res
 	def getActiveTxid(self):
-		return self.getTxid(self.getActive())
+		return getTxid(self.getActive())
 	def getNewTxid(self):
-		return self.getTxid(self.getNew())
+		return getTxid(self.getNew())
 
 	def getOrders(self, status):
 		query = '''SELECT * FROM `orders` WHERE `status` = ?'''
@@ -67,6 +55,17 @@ class DB():
 	def setOrderStatus(self, txid, status):
 		query = '''UPDATE `orders` SET `status` = ? WHERE `txid` = ?'''
 		self.c.execute(query, (status, txid))
+
+def getTickers(orders):
+	res = []
+	for _, _, _, _, _, ticker, _, _ in orders:
+		res.append(ticker)
+	return res
+def getTxid(orders):
+	res = []
+	for txid, _, _, _, _, _, _, _ in orders:
+		res.append(txid)
+	return res
 
 class API():
 	def __init__(self, keyfile="kraken.key"):
@@ -121,13 +120,13 @@ if __name__ == "__main__":
 
 	db.setNewActive()
 
-	active_tickers = set(db.getTickers(db.getActive()))
+	active_tickers = set(getTickers(db.getActive()))
 	if len(active_tickers) == 0:
 		print("No orders to process.\nQuitting.")
 		db.commit()
 		api.close()
 		sys.exit()
-	prices = api.getTicker(active_tickers)
+	prices = getTicker(active_tickers)
 
 
 	print("Active Orders\n=============================")
