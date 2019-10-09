@@ -3,7 +3,7 @@
 # Copyright Ali Raheem 2019
 # GPLv3
 
-import sqlite3, krakenex, datetime
+import sqlite3, krakenex, datetime, sys
 
 class DB():
 	def __init__(self, path='orders.sqlite'):
@@ -94,6 +94,8 @@ class API():
 			return response['result']['txid'][0]
 		else:
 			raise Exception(response['error'][0])
+	def close(self):
+		self.k.close()
 
 if __name__ == "__main__":
 	db = DB()
@@ -115,6 +117,11 @@ if __name__ == "__main__":
 	db.setNewActive()
 
 	active_tickers = set(db.getTickers(db.getActive()))
+	if len(active_tickers) == 0:
+		print("No orders to process.\nQuitting.")
+		db.commit()
+		api.close()
+		sys.exit()
 	prices = api.getTicker(active_tickers)
 
 	print("Active Orders\n==================")
@@ -136,4 +143,5 @@ if __name__ == "__main__":
 
 	print()
 	db.commit()
+	api.close()
 
