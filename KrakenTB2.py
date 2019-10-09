@@ -147,7 +147,7 @@ if __name__ == "__main__":
 			db.commit() # Commit each successfully added order.
 		else:
 			print("Keeping", txid)
-		print("----------------------------------------------"
+		print("----------------------------------------------")
 
 	print()
 	db.commit()
