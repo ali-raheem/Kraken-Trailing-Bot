@@ -130,23 +130,24 @@ if __name__ == "__main__":
 	prices = api.getTicker(active_tickers)
 
 
-	print("Active Orders\n==================")
+	print("Active Orders\n=============================")
 	for txid, pair, price, volume, offset, ticker, status, note in db.getActive():
-		close_price = float("%.5f" % float(prices[ticker]['c'][0]))
+		close_price = round(float(prices[ticker]['c'][0]), 5)
 		print(txid, "pair:", pair, "Stop price:", price, "volume:", volume)
-		current_price = float("%.5f" % (close_price - offset))
+		current_price = round(close_price - offset, 5)
 		print("Close price:", close_price, "New stop:", current_price)
 		if current_price > price: # TODO: Move this out to an evaluation function to allow buy and sell and more complex evaluation.
 			print("Replaceing order", txid)
 			api.cancelOrder(txid) # TODO: Handle errors here with an error status and note.
 # TODO: I think the order shouldn't be cancelled but held in another status,
 # 	which will automtically be readded next run.
-			db.cancelOrder(txid)
+			db.cancelOrder(txid) # Should we commit this?
 			txid = api.addOrder(pair, current_price, volume)
 			db.addOrder(txid, pair, current_price, volume, offset, ticker, 1, note)
 			db.commit() # Commit each successfully added order.
 		else:
 			print("Keeping", txid)
+		print("----------------------------------------------"
 
 	print()
 	db.commit()
