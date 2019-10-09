@@ -1,11 +1,10 @@
 # Kraken Trailing Bot
 
-
 DISCLAIMER: I am not responsible for your lost money, or any trouble you get into to.
 I have lost **LOADS** of money with this, bugs can potentially cost you dearly.
 You have been warned.
 
-
+## Description
 
 This bot takes a currency pair and an amount to trade and an "offset". It monitors the market and manages a stop-loss trade which is maintained no lower than the peak - some offset.
 
@@ -15,11 +14,13 @@ Please familiarise yourself with the [Kraken API docs](https://www.kraken.com/fe
 
 ## Issues
 
-*  I'm not entirely sure the database mangement works, you might be better off deleting `orders.sqlite` if all the orders are done
-*  Really needs cleaning up
-*  I think there are race conditions in the orders being dealt with
-*  State -1 (error) is not yet implemented.
-*  Buy and take-profit types would also be good.
+Not a complete list:
+
+* I'm not entirely sure the database mangement works, you might be better off deleting `orders.sqlite` if all the orders are done
+* Really needs cleaning up
+* I think there are race conditions in the orders being dealt with
+* State -1 (error) is not yet implemented.
+* Buy and take-profit types would also be good.
 
 ## TODO
 
@@ -28,6 +29,12 @@ Issues I really care about
 * Make it take command line arguments to add new orders?
 * Make it more failsafe see note in code.
 * Web monitor?
+
+## Dependencies
+* [Krakenex](https://github.com/veox/python3-krakenex)
+  * requests
+
+* Sqlite3
 
 ## Usage
 
@@ -39,6 +46,8 @@ Now the bot should make a stop-loss sell order at the last price - offset and wi
 
 ## Running
 
+This is how I run on my Raspbian:
+
 ```sh
 while true; do
 	python3 KrakenTB2.py
@@ -46,14 +55,7 @@ while true; do
 done
 ```
 
-Or whatever the windows BAT equivalent is.
-
-I'm pretty sure it could run must more often as the only API call to raise the rate counter is OpenOrders (I think this raises it 1).
-
-## Dependencies
-* [Krakenex](https://github.com/veox/python3-krakenex)
-	* requests
-* Sqlite3
+I'm pretty sure it could run much more often as the only API call to raise the rate counter is OpenOrders (I think this raises it 1).
 
 ## License
 
