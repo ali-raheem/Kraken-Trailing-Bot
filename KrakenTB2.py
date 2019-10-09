@@ -103,16 +103,21 @@ if __name__ == "__main__":
 
 	print(datetime.datetime.now().strftime("%Y-%l-%d %H:%M:%S"))
 
+# TODO: This should be handled by command line arguments.
+# 	Maybe we can also pass active orders to start with,
+#	of different inital offset and maintainence offset
 #	db.addOrder("", "XRPEUR", 0, 50, 0.008, "XXRPZEUR", 2, "")
 
 	active_orders_api = set(api.getOpenOrders())
 	active_orders_db = set(db.getActiveTxid())
-
 	stale_orders = active_orders_db - active_orders_api
 
 	for order in stale_orders:
 		print("Cancelling stale order", order)
 		db.cancelOrder(order)
+
+	db.commit() # Commit inactivating stale orders.
+
 
 	db.setNewActive()
 
@@ -124,20 +129,22 @@ if __name__ == "__main__":
 		sys.exit()
 	prices = api.getTicker(active_tickers)
 
+
 	print("Active Orders\n==================")
 	for txid, pair, price, volume, offset, ticker, status, note in db.getActive():
 		close_price = float("%.5f" % float(prices[ticker]['c'][0]))
 		print(txid, "pair:", pair, "Stop price:", price, "volume:", volume)
 		current_price = float("%.5f" % (close_price - offset))
 		print("Close price:", close_price, "New stop:", current_price)
-		if current_price > price:
+		if current_price > price: # TODO: Move this out to an evaluation function to allow buy and sell and more complex evaluation.
 			print("Replaceing order", txid)
-			api.cancelOrder(txid)
-			# Here we shouldn't simply cancel order but make it failsafe if addOrder errors for some reason.
-			# Set status = 2, and price = 0? To guarantee it is readded on next run?
+			api.cancelOrder(txid) # TODO: Handle errors here with an error status and note.
+# TODO: I think the order shouldn't be cancelled but held in another status,
+# 	which will automtically be readded next run.
 			db.cancelOrder(txid)
 			txid = api.addOrder(pair, current_price, volume)
 			db.addOrder(txid, pair, current_price, volume, offset, ticker, 1, note)
+			db.commit() # Commit each successfully added order.
 		else:
 			print("Keeping", txid)
 
