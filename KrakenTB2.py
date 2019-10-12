@@ -11,10 +11,7 @@ class DB():
 		self.c = self.conn.cursor()
 		self.initialise()
 	def initialise(self):
-		self.c.execute('''SELECT * FROM `sqlite_master` WHERE `tbl_name` = 'orders' ''')
-		if self.c.fetchone() != None:
-			return
-		query = '''CREATE TABLE `orders`
+		query = '''CREATE TABLE IF NOT EXISTS `orders`
 				(txid TEXT,
 				pair TEXT,
 				price REAL,
